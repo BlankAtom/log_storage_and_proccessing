@@ -7,10 +7,14 @@ package edu.jmu.hbase; /**
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.filter.SubstringComparator;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.List;
 
 public class HBaseDemoMain {
@@ -258,6 +262,212 @@ public class HBaseDemoMain {
         Table table = connection.getTable(TableName.valueOf(tableName));
 
         table.delete(delete);
+        table.close();
+    }
+
+    //打印查询的结果
+    public static void printResult(Table table, Scan scan){
+        try {
+            ResultScanner scanner = table.getScanner(scan);
+            Iterator<Result> iterator = scanner.iterator();
+            while(iterator.hasNext()){
+                Result result = iterator.next();
+                CellScanner cellScanner = result.cellScanner();
+                while(cellScanner.advance()){
+                    Cell cell = cellScanner.current();
+                    System.out.println(new String(CellUtil.cloneQualifier(cell),"utf-8")+ ":" +new String(CellUtil.cloneValue(cell),"utf-8"));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    //过滤器链基本操作实现
+    public static void filterList(String tableName) throws IOException{
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //创建两个单值过滤器
+        SingleColumnValueFilter singleColumnValueFilter1 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_id"),CompareOperator.EQUAL,Bytes.toBytes("7423866288265172"));
+        SingleColumnValueFilter singleColumnValueFilter2 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_id"),CompareOperator.EQUAL,Bytes.toBytes("5"));
+        //过滤单值属性列，如果没有这个属性列就不计算它
+        singleColumnValueFilter1.setFilterIfMissing(true);
+        singleColumnValueFilter2.setFilterIfMissing(true);
+        //添加到过滤器链中
+        filterList.addFilter(singleColumnValueFilter1);
+        filterList.addFilter(singleColumnValueFilter2);
+        //创建scan
+        Scan scan = new Scan();
+        //设置过滤器
+        scan.setFilter(filterList);
+        //获取表
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        //打印
+        printResult(table,scan);
+        //释放资源
+        table.close();
+    }
+
+
+    //时间段查询
+    public static void searchTime(String tableName,String time) throws IOException {
+
+        String[] times = time.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+        //大于开始时间
+        SingleColumnValueFilter singleColumnValueFilter1 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),CompareOperator.GREATER_OR_EQUAL,Bytes.toBytes(times[0]));
+        singleColumnValueFilter1.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter1);
+        //小于结束时间
+        SingleColumnValueFilter singleColumnValueFilter2 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),CompareOperator.LESS_OR_EQUAL,Bytes.toBytes(times[1]));
+        singleColumnValueFilter2.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter2);
+
+        //创建scan
+        Scan scan = new Scan();
+        //设置过滤器
+        scan.setFilter(filterList);
+        //获取表
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        //打印
+        printResult(table,scan);
+        //释放资源
+        table.close();
+    }
+
+    //根据用户ID查询
+    public static void searchID(String tableName,String ids) throws IOException {
+        //创建一个字符串数组 包含了多个ID
+        String[] id = ids.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //通过字符串数组创建多个单值过滤器
+        for(int i=0;i<id.length;i++)
+        {
+            String keyword = id[i];
+            SingleColumnValueFilter singleColumnValueFilter =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_id"),CompareOperator.EQUAL,Bytes.toBytes(keyword));
+            singleColumnValueFilter.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter);
+        }
+        //创建scan
+        Scan scan = new Scan();
+        //设置过滤器
+        scan.setFilter(filterList);
+        //获取表
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        //打印
+        printResult(table,scan);
+        //释放资源
+        table.close();
+    }
+
+    //根据用户关键词查询
+    public static void searchKeyword(String tableName,String words) throws IOException {
+        //创建一个字符串数组 包含了多个关键字
+        String[] word = words.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //通过字符串数组创建多个单值过滤器
+        for(int i=0;i<word.length;i++)
+        {
+            String keyword = word[i];
+            SubstringComparator substringComparator = new SubstringComparator(keyword);
+            SingleColumnValueFilter singleColumnValueFilter =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("search_word"),CompareOperator.EQUAL,substringComparator);
+            singleColumnValueFilter.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter);
+        }
+        //创建scan
+        Scan scan = new Scan();
+        //设置过滤器
+        scan.setFilter(filterList);
+        //获取表
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        //打印
+        printResult(table,scan);
+        //释放资源
+        table.close();
+    }
+
+    //根据url查询
+    public static void searchUrl(String tableName,String urls) throws IOException {
+        //创建一个字符串数组 包含了多个关键字
+        String[] url = urls.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //通过字符串数组创建多个单值过滤器
+        for(int i=0;i<url.length;i++)
+        {
+            String keyword = url[i];
+            SubstringComparator substringComparator = new SubstringComparator(keyword);
+            SingleColumnValueFilter singleColumnValueFilter =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_click_url"),CompareOperator.EQUAL,substringComparator);
+            singleColumnValueFilter.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter);
+        }
+        //创建scan
+        Scan scan = new Scan();
+        //设置过滤器
+        scan.setFilter(filterList);
+        //获取表
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        //打印
+        printResult(table,scan);
+        //释放资源
+        table.close();
+    }
+
+    //联合查询
+    public static void searchALL(String tableName,String keywords) throws IOException{
+        //先把输入的字符分割成四个部分
+        String[] word = keywords.split("\\+");
+        //创建一个过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+        //分割第一部分时间的查询
+        String[] times = word[0].split("\\|");
+        SingleColumnValueFilter singleColumnValueFilter1 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),CompareOperator.GREATER_OR_EQUAL,Bytes.toBytes(times[0]));
+        singleColumnValueFilter1.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter1);
+        //小于结束时间
+        SingleColumnValueFilter singleColumnValueFilter2 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),CompareOperator.LESS_OR_EQUAL,Bytes.toBytes(times[1]));
+        singleColumnValueFilter2.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter2);
+        //第二部分用户ID
+        String id = word[1];
+        SingleColumnValueFilter singleColumnValueFilter3 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_id"),CompareOperator.EQUAL,Bytes.toBytes(id));
+        singleColumnValueFilter3.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter3);
+        //第三部分关键字查询
+        String keyword = word[2];
+        SubstringComparator substringComparator = new SubstringComparator(keyword);
+        SingleColumnValueFilter singleColumnValueFilter4 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("search_word"),CompareOperator.EQUAL,substringComparator);
+        singleColumnValueFilter4.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter4);
+        //第四部分url查询
+        String url = word[3];
+        SubstringComparator substringComparator1 = new SubstringComparator(url);
+        SingleColumnValueFilter singleColumnValueFilter5 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_click_url"),CompareOperator.EQUAL,substringComparator);
+        singleColumnValueFilter5.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter5);
+
+        Scan scan = new Scan();
+        //设置过滤器
+        scan.setFilter(filterList);
+        //获取表
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        //打印
+        printResult(table,scan);
+        //释放资源
         table.close();
     }
 }

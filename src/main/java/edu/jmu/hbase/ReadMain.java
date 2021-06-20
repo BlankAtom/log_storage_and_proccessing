@@ -1,16 +1,12 @@
 package edu.jmu.hbase;
 
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.mapred.FileInputFormat;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
 
 
 /**
@@ -20,82 +16,59 @@ import java.util.List;
  * @date 2021/06/16/20:00
  */
 public class ReadMain {
-//    public static void main(String[] args) {
-//        if( args.length <= 1 ) {
-//            System.out.println("You need more parameters to tell me where is the file!");
-////            return;
-//        }
-////        File file = new File(args[1]);
-//
-//        long time = new Date().getTime();
-//        File file = new File("D:\\ImDeveloper\\code\\java\\rocael_spark_demo\\spark-demo\\src\\main\\resources\\test.txt");
-//        BufferedReader bufferedReader = null;
-//        int line = 1;
-//        String tempStr;
-//        ReadMain readMain = new ReadMain();
-//        List<Put> puts = new ArrayList<Put>();
-//        try {
-//            bufferedReader = new BufferedReader(new FileReader(file));
-//            while( (tempStr = bufferedReader.readLine()) != null ){
-//                String[] s = tempStr.split("\\s+");
-//
-//                // start_time user_id, search_word, url_reward, user_click_no, user_click_url
-//                if(s.length != 6 ) {
-//                    System.out.println("line " + line + " is error data. and length is " + s.length);
-//                }
-//                else {
-////                    System.out.println(Arrays.toString(s));
-//                    puts.addAll(readMain.instancePut(Integer.toString(line), s[0], s[1], s[2], s[3], s[4], s[5]));
-//                }
-//                line++;
-//
-//                if( line % 3000 == 0){
-//                    HBaseDemoMain.insertDatas("log_records", puts);
-//                    puts = new ArrayList<>();
-//
-//                    System.out.println("3000 datas is inserting.");
-//                }
-//            }
-//            HBaseDemoMain.insertDatas("log_records", puts);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public static void main(String[] args) throws IOException {
 
-    public List<Put> instancePut(String rowkey, String start_time, String user_id, String search_word,
-                           String url_reward, String user_click_no, String user_click_url){
-        List<Put> puts = new ArrayList<>();
-        Put put = new Put(rowkey.getBytes(StandardCharsets.UTF_8));
-        put.addColumn("info".getBytes(StandardCharsets.UTF_8),
-                "start_time".getBytes(StandardCharsets.UTF_8),
-                start_time.getBytes(StandardCharsets.UTF_8));
-        puts.add(put);
-        put = new Put(rowkey.getBytes(StandardCharsets.UTF_8));
-        put.addColumn("info".getBytes(StandardCharsets.UTF_8),
-                "user_id".getBytes(StandardCharsets.UTF_8),
-                user_id.getBytes(StandardCharsets.UTF_8));
-        puts.add(put);
-        put = new Put(rowkey.getBytes(StandardCharsets.UTF_8));
-        put.addColumn("info".getBytes(StandardCharsets.UTF_8),
-                "search_word".getBytes(StandardCharsets.UTF_8),
-                search_word.getBytes(StandardCharsets.UTF_8));
-        puts.add(put);
-        put = new Put(rowkey.getBytes(StandardCharsets.UTF_8));
-        put.addColumn("info".getBytes(StandardCharsets.UTF_8),
-                "url_reward".getBytes(StandardCharsets.UTF_8),
-                url_reward.getBytes(StandardCharsets.UTF_8));
-        puts.add(put);
-        put = new Put(rowkey.getBytes(StandardCharsets.UTF_8));
-        put.addColumn("info".getBytes(StandardCharsets.UTF_8),
-                "user_click_no".getBytes(StandardCharsets.UTF_8),
-                user_click_no.getBytes(StandardCharsets.UTF_8));
-        puts.add(put);
-        put = new Put(rowkey.getBytes(StandardCharsets.UTF_8));
-        put.addColumn("info".getBytes(StandardCharsets.UTF_8),
-                "user_click_url".getBytes(StandardCharsets.UTF_8),
-                user_click_url.getBytes(StandardCharsets.UTF_8));
-        puts.add(put);
+        boolean flag = true;
+        while(flag) {
+            System.out.println("请输入你想要的查询方式");
+            System.out.println("1.根据开始时间和结束时间查询");
+            System.out.println("2.根据用户ID查询");
+            System.out.println("3.根据关键词查询");
+            System.out.println("4.根据url查询");
+            System.out.println("5.联合查询");
+            System.out.println("0.退出");
 
-        return puts;
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+            String choose = buffer.readLine();
+            switch(choose){
+                case "1":
+                    System.out.println("请按照 开始时间|结束时间 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    BufferedReader b1 = new BufferedReader(new InputStreamReader(System.in));
+                    String time = buffer.readLine();
+                    HBaseDemoMain.searchTime("test_records",time);
+                    break;
+                case "2":
+                    System.out.println("请按照 用户ID|用户ID|... 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    BufferedReader b2 = new BufferedReader(new InputStreamReader(System.in));
+                    String ids = buffer.readLine();
+                    HBaseDemoMain.searchID("test_records",ids);
+                    break;
+                case "3":
+                    System.out.println("请按照 关键字|关键字|... 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    BufferedReader b3 = new BufferedReader(new InputStreamReader(System.in));
+                    String words = buffer.readLine();
+                    HBaseDemoMain.searchKeyword("test_records",words);
+                    break;
+                case "4":
+                    System.out.println("请按照 url|url|... 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    BufferedReader b4 = new BufferedReader(new InputStreamReader(System.in));
+                    String urls = buffer.readLine();
+                    HBaseDemoMain.searchUrl("test_records",urls);
+                    break;
+                case "5":
+                    System.out.println("请按照 开始时间|结束时间+用户ID+关键字+url 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    System.out.println("不需要的条件用#代替");
+                    BufferedReader b5 = new BufferedReader(new InputStreamReader(System.in));
+                    String word = buffer.readLine();
+                    HBaseDemoMain.searchALL("test_records",word);
+                    break;
+                case "0":
+                    flag = false;
+                    break;
+            }
+        }
+
     }
+
+
 }
