@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <hadoop.version>3.2.2</hadoop.version>
+        <hadoop.version>3.3.1</hadoop.version>
     </properties>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -28,7 +28,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>edu.jmu.SparkDB</mainClass>
+                            <mainClass>edu.jmu.rdd.SparkDB</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -59,7 +59,7 @@
                     <includeProjectDependencies>true</includeProjectDependencies>
                     <includePluginDependencies>false</includePluginDependencies>
                     <classpathScope>compile</classpathScope>
-                    <mainClass>edu.jmu.SparkDB</mainClass>
+                    <mainClass>edu.jmu.rdd.SparkDB</mainClass>
                 </configuration>
             </plugin>
 

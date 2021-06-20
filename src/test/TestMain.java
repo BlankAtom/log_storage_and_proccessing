@@ -1,4 +1,4 @@
-import edu.jmu.SparkDB;
+import edu.jmu.rdd.SparkDB;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -17,6 +17,16 @@ public class TestMain{
         String[] split = s.split("\\[");
         String[] split1 = split[1].split("\\]");
         System.out.println(Arrays.toString(split1));
+    }
+
+    @Test
+    public void fun3() {
+        System.out.println(SparkDB.splitRecord("00:18:56\t620388917049539\t[長春旅遊]\t1 1\twww.ccta.gov.cn/"));
+    }
+
+    @Test
+    public void fun4() {
+        System.out.println(SparkDB.getUrlName("https://127.0.0.1/bbs/index"));
     }
 
     @Test
