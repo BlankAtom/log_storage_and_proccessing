@@ -1,4 +1,4 @@
-package edu.jmu; /**
+package edu.jmu.hbase; /**
  * @Auther: 罗庆宏
  * @Date: 2021/04/12/22:29
  * @Description:

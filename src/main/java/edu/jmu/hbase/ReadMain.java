@@ -1,4 +1,4 @@
-package edu.jmu;
+package edu.jmu.hbase;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.mapred.FileInputFormat;

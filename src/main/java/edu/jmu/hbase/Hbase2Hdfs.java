@@ -1,4 +1,4 @@
-package edu.jmu;
+package edu.jmu.hbase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
