@@ -9,9 +9,7 @@ import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
-import scala.io.Source;
 
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -26,7 +24,7 @@ import java.util.regex.Pattern;
  */
 public class SparkDB {
 
-    public static boolean parseInputSearch(String s)  {
+    public static void parseInputSearch(String s)  {
         String[] ss = s.split("\\+");
         List<String> inputs = new ArrayList<>();
         for (String value : ss) {
@@ -39,16 +37,9 @@ public class SparkDB {
             isUrlInput(item);
         });
 
-        return true;
-
     }
 
-    public static void whatSearch(String search) {
-
-
-    }
-
-    public static boolean isUrlInput(String s) {
+    public static void isUrlInput(String s) {
         String[] split = s.split("\\|");
         for (String s1 : split) {
             if( isUrl(s1.trim())){
@@ -56,7 +47,6 @@ public class SparkDB {
                 SparkDB.sUrl.add(s1.trim());
             }
         }
-        return true;
     }
 
     public static boolean isUrl(String s) {
@@ -79,7 +69,7 @@ public class SparkDB {
 
         return null;
     }
-    public static boolean isWordInput(String s) {
+    public static void isWordInput(String s) {
         String[] split = s.split("\\|");
         for (String value : split) {
             if (isWord(value.trim())) {
@@ -87,14 +77,13 @@ public class SparkDB {
                 SparkDB.sWord.add(value.trim());
             }
         }
-        return true;
     }
 
     public static boolean isWord(String s) {
         return !isTime(s.trim()) && !isId(s.trim()) && !isUrl(s.trim());
     }
 
-    public static boolean isIDInput(String s) {
+    public static void isIDInput(String s) {
         String[] split = s.split("\\|");
         for (String value : split) {
             if (isId(value.trim())) {
@@ -102,41 +91,30 @@ public class SparkDB {
                 SparkDB.sID.add(value.trim());
             }
         }
-        return enableIDCompare;
     }
     public static boolean isId(String s) {
         Pattern pattern = Pattern.compile("^[0-9]{15,20}$");
         return  pattern.matcher(s).matches();
     }
-    public static boolean isTimeInput(String s) {
+    public static void isTimeInput(String s) {
         String[] split = s.split("\\|");
         if(split.length == 2) {
             if(  isTime(split[0].trim()) && isTime(split[1].trim()) ){
                 enableTimeCompare = true;
                 sTime.add(split[0].trim());
                 sTime.add(split[1].trim());
-                return true;
+                return;
             }
         }
         System.out.println("Input error time: " + s);
-        return false;
     }
     public static boolean isTime(String s) {
         Pattern pattern = Pattern.compile("[0-2][0-9]:[0-6][0-9]:[0-6][0-9]");
         return  pattern.matcher(s).matches();
     }
 
-    public static boolean isUserID(String s) {
-        Pattern pattern = Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-
-        Matcher matcher = pattern.matcher(s);
-        return matcher.matches();
-    }
-
     public static int findRightMiddle(String s, int  startIndex){
         StringBuilder buffer = new StringBuilder(s);
-        int temp = 0;
-
         for (int i = startIndex; i < s.length(); i++) {
             if( buffer.charAt(i)=='\t'){
                 if( buffer.charAt(i+1) >= '0' && buffer.charAt(i+1) <= '9'){
@@ -152,9 +130,6 @@ public class SparkDB {
     public static void main(String[] args) {
         String inputFile = "hdfs://localhost:9000/input/SogouQ.reduced" ;//args[0];
         String outputFile = "hdfs://localhost:9000/output"; //args[1];
-
-        String search = "00:00:00 | 00:01:00 + 2982199073774412 + 360 + it.com";
-        String search1 = "360";
 
         if(args.length==0 || "--help".equals(args[0])){
             System.out.println("\t\"search\":  条件查询，");
@@ -218,61 +193,33 @@ public class SparkDB {
     }
     public static void timeStreamCompute(String input, String output, String time_start, String time_stop) {
         JavaSparkContext sc = new JavaSparkContext(new SparkConf().setAppName("SparkName").setMaster("local"));
-//        scala.collection.immutable.List<Object> files = Source.fromFile(input, "gbk").toList();
-//        files.parali
 
         JavaRDD<String> logData = sc.textFile(input);
-        List<Integer> resCount = new ArrayList<>();
-        List<String> allWords = new ArrayList<>();
-        List<String> allUrl = new ArrayList<>();
-//        logData = logData.map(p->new String(p.getBytes(), 0, p.length(), "UTF-8"));
-//        Map<String, Integer> wordCount = new
-        JavaRDD<String> res = logData.filter(new Function<String, Boolean>() {
-            @Override
-            public Boolean call(String s) throws Exception {
-//                s = s.tran
-                List<String> list = SparkDB.splitRecord(s);
-
-                return isInTimeLine(list.get(0), time_start, time_stop);
-            }
+        JavaRDD<String> res = logData.filter((Function<String, Boolean>) s -> {
+            List<String> list = SparkDB.splitRecord(s);
+            return isInTimeLine(list.get(0), time_start, time_stop);
         });
 
-        JavaPairRDD<String, Integer> pairRDD = res.mapToPair(new PairFunction<String, String, Integer>() {
-            @Override
-            public Tuple2<String, Integer> call(String s) throws Exception {
-                List<String> list = SparkDB.splitRecord(s);
-                return new Tuple2<>(list.get(2), 1);
-            }
+        JavaPairRDD<String, Integer> pairRDD = res.mapToPair((PairFunction<String, String, Integer>) s -> {
+            List<String> list = SparkDB.splitRecord(s);
+            return new Tuple2<>(list.get(2), 1);
         });
-        JavaPairRDD<String, Integer> urlRdd = res.mapToPair(new PairFunction<String, String, Integer>() {
-            @Override
-            public Tuple2<String, Integer> call(String s) throws Exception {
-                List<String> list = SparkDB.splitRecord(s);
-                String urlName = SparkDB.getUrlName(list.get(5));
-                if( urlName == null ){
-                    urlName = list.get(5);
-                }
-                return new Tuple2<>(urlName, 1);
+        JavaPairRDD<String, Integer> urlRdd = res.mapToPair((PairFunction<String, String, Integer>) s -> {
+            List<String> list = SparkDB.splitRecord(s);
+            String urlName = SparkDB.getUrlName(list.get(5));
+            if( urlName == null ){
+                urlName = list.get(5);
             }
+            return new Tuple2<>(urlName, 1);
         });
-        JavaPairRDD<String, Integer> wordPairRDD = pairRDD.reduceByKey(new Function2<Integer, Integer, Integer>() {
-            @Override
-            public Integer call(Integer v1, Integer v2) throws Exception {
-                return v1 + v2;
-            }
-        });
-        JavaPairRDD<String, Integer> urlRDD = urlRdd.reduceByKey(new Function2<Integer, Integer, Integer>() {
-            @Override
-            public Integer call(Integer v1, Integer v2) throws Exception {
-                return v1 + v2;
-            }
-        });
+        JavaPairRDD<String, Integer> wordPairRDD = pairRDD.reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
+        JavaPairRDD<String, Integer> urlRDD = urlRdd.reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
         wordPairRDD.foreach((VoidFunction<Tuple2<String, Integer>>) stringIntegerTuple2 -> {
-            String s = new String(stringIntegerTuple2._1 + "  " + stringIntegerTuple2._2);
+            String s = stringIntegerTuple2._1 + "  " + stringIntegerTuple2._2;
             System.out.println(s);
         });
         urlRDD.foreach((VoidFunction<Tuple2<String, Integer>>) stringIntegerTuple2 -> {
-            String s = new String(stringIntegerTuple2._1 + "  " + stringIntegerTuple2._2);
+            String s = stringIntegerTuple2._1 + "  " + stringIntegerTuple2._2;
             System.out.println(s);
         });
         wordPairRDD.saveAsTextFile(output+"/timeWord");
@@ -282,7 +229,6 @@ public class SparkDB {
     public static void rddStartSearch(String input, String output, String search) {
         JavaSparkContext sc = new JavaSparkContext(new SparkConf().setAppName("SparkName").setMaster("local"));
         JavaRDD<String> logData = sc.textFile(input).cache();
-//        List<String> result = new ArrayList<String>();
         parseInputSearch(search);
         System.out.println(sWord);
         System.out.println(sUrl);
@@ -293,7 +239,7 @@ public class SparkDB {
 //            System.out.println(list);
             boolean compare = true;
             if (SparkDB.enableTimeCompare ) {
-                compare = compare && isInTimeLine(list.get(0));
+                compare = isInTimeLine(list.get(0));
             }
             if( SparkDB.enableIDCompare) {
                 compare = compare && isSearchID(list.get(1));
@@ -318,8 +264,6 @@ public class SparkDB {
     public static boolean enableWordCompare = false;
     public static boolean enableUrlCompare = false;
 
-    public static String sTime_start = "";
-    public static String sTime_stop = "";
     public static ArrayList<String> sTime = new ArrayList<>();
     public static ArrayList<String> sWord = new ArrayList<>();
     public static ArrayList<String> sUrl = new ArrayList<>();
@@ -330,7 +274,7 @@ public class SparkDB {
         int rightIndex = findRightMiddle(s, leftIndex);
         String[] split_left = s.substring(0, leftIndex).trim().split("\\s+");
         String[] split_right = s.substring(rightIndex+1).trim().split("\\s+");
-        List<String> strings = new ArrayList<String>(Arrays.asList(split_left));
+        List<String> strings = new ArrayList<>(Arrays.asList(split_left));
         String trim = s.substring(leftIndex + 1, rightIndex).trim();
         strings.add(trim);
         strings.addAll(Arrays.asList(split_right));
@@ -342,9 +286,6 @@ public class SparkDB {
 //        "12:58:08\t8955143566377745\t[[uusee网络电视]\t2 1\twww.cnuusee.cn/"
 
         return strings;
-    }
-    public void writeFile(String file) {
-
     }
 
     /**
@@ -391,9 +332,9 @@ public class SparkDB {
 
     /**
      *
-     * @param word
-     * @param words
-     * @return
+     * @param word -
+     * @param words -
+     * @return -
      */
     public static boolean isSearchWord(String word,
                                 List<String> words){

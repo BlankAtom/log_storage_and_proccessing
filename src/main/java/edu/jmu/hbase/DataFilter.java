@@ -6,9 +6,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.yarn.api.records.URL;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -26,8 +24,12 @@ public class DataFilter {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         if( args.length == 0) {
-            System.out.println(new String("你需要更多的参数!".getBytes(), 0, "你需要更多的参数!".length(), "UTF-8"));
+            System.out.println(new String("class DataFilter: 你需要更多的参数!".getBytes(), 0, "你需要更多的参数!".length(), StandardCharsets.UTF_8));
             System.out.println("eg. hadoop jar xxx.jar /input/Sogou.txt");
+            System.exit(0);
+        }
+        if (args.length > 1) {
+            System.out.println("class DataFilter: 你输入了过多参数");
             System.exit(0);
         }
         createTable(args);
@@ -62,17 +64,17 @@ public class DataFilter {
                 line++;
 
                 if( line % 4000 == 0){
-                    HBaseDemoMain.insertDatas("test_records", puts);
+                    HBaseDemoMain.insertData("test_records", puts);
                     puts.clear();
-                    System.out.println("4000 datas is inserting. Now sum lines is:  " + line);
+                    System.out.println("4000 data is inserting. Now sum lines is:  " + line);
                 }
             }
-            HBaseDemoMain.insertDatas("test_records", puts);
+            HBaseDemoMain.insertData("test_records", puts);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println(new Date().getTime() - time);
+        System.out.println("cost time: " + (new Date().getTime() - time) + "ms");
     }
 
     public List<Put> instancePut(String rowkey, String start_time, String user_id, String search_word,

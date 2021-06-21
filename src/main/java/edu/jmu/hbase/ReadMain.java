@@ -1,11 +1,6 @@
 package edu.jmu.hbase;
 
-import org.apache.hadoop.hbase.client.Put;
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 
 
