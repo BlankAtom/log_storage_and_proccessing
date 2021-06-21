@@ -429,36 +429,52 @@ public class HBaseDemoMain {
         //创建一个过滤器链
         FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
         //分割第一部分时间的查询
-        String[] times = word[0].split("\\|");
-        SingleColumnValueFilter singleColumnValueFilter1 =
-                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),CompareOperator.GREATER_OR_EQUAL,Bytes.toBytes(times[0]));
-        singleColumnValueFilter1.setFilterIfMissing(true);
-        filterList.addFilter(singleColumnValueFilter1);
-        //小于结束时间
-        SingleColumnValueFilter singleColumnValueFilter2 =
-                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),CompareOperator.LESS_OR_EQUAL,Bytes.toBytes(times[1]));
-        singleColumnValueFilter2.setFilterIfMissing(true);
-        filterList.addFilter(singleColumnValueFilter2);
+        if(word[0].equals('#')){
+            ;
+        }else {
+            String[] times = word[0].split("\\|");
+            SingleColumnValueFilter singleColumnValueFilter1 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("start_time"), CompareOperator.GREATER_OR_EQUAL, Bytes.toBytes(times[0]));
+            singleColumnValueFilter1.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter1);
+            //小于结束时间
+            SingleColumnValueFilter singleColumnValueFilter2 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("start_time"), CompareOperator.LESS_OR_EQUAL, Bytes.toBytes(times[1]));
+            singleColumnValueFilter2.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter2);
+        }
         //第二部分用户ID
-        String id = word[1];
-        SingleColumnValueFilter singleColumnValueFilter3 =
-                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_id"),CompareOperator.EQUAL,Bytes.toBytes(id));
-        singleColumnValueFilter3.setFilterIfMissing(true);
-        filterList.addFilter(singleColumnValueFilter3);
+        if(word[1].equals('#')){
+            ;
+        }else {
+            String id = word[1];
+            SingleColumnValueFilter singleColumnValueFilter3 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("user_id"), CompareOperator.EQUAL, Bytes.toBytes(id));
+            singleColumnValueFilter3.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter3);
+        }
         //第三部分关键字查询
-        String keyword = word[2];
-        SubstringComparator substringComparator = new SubstringComparator(keyword);
-        SingleColumnValueFilter singleColumnValueFilter4 =
-                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("search_word"),CompareOperator.EQUAL,substringComparator);
-        singleColumnValueFilter4.setFilterIfMissing(true);
-        filterList.addFilter(singleColumnValueFilter4);
+        if(word[1].equals('#')){
+            ;
+        }else {
+            String keyword = word[2];
+            SubstringComparator substringComparator = new SubstringComparator(keyword);
+            SingleColumnValueFilter singleColumnValueFilter4 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("search_word"), CompareOperator.EQUAL, substringComparator);
+            singleColumnValueFilter4.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter4);
+        }
         //第四部分url查询
-        String url = word[3];
-        SubstringComparator substringComparator1 = new SubstringComparator(url);
-        SingleColumnValueFilter singleColumnValueFilter5 =
-                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_click_url"),CompareOperator.EQUAL,substringComparator);
-        singleColumnValueFilter5.setFilterIfMissing(true);
-        filterList.addFilter(singleColumnValueFilter5);
+        if(word[1].equals('#')){
+            ;
+        }else {
+            String url = word[3];
+            SubstringComparator substringComparator1 = new SubstringComparator(url);
+            SingleColumnValueFilter singleColumnValueFilter5 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("user_click_url"), CompareOperator.EQUAL, substringComparator1);
+            singleColumnValueFilter5.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter5);
+        }
 
         Scan scan = new Scan();
         //设置过滤器

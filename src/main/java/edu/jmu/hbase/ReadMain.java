@@ -32,31 +32,31 @@ public class ReadMain {
             String choose = buffer.readLine();
             switch(choose){
                 case "1":
-                    System.out.println("请按照 开始时间|结束时间 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    System.out.println("请按照 开始时间|结束时间 的方式进行输入");
                     BufferedReader b1 = new BufferedReader(new InputStreamReader(System.in));
                     String time = buffer.readLine();
                     HBaseDemoMain.searchTime("test_records",time);
                     break;
                 case "2":
-                    System.out.println("请按照 用户ID|用户ID|... 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    System.out.println("请按照 用户ID|用户ID|... 的方式进行输入");
                     BufferedReader b2 = new BufferedReader(new InputStreamReader(System.in));
                     String ids = buffer.readLine();
                     HBaseDemoMain.searchID("test_records",ids);
                     break;
                 case "3":
-                    System.out.println("请按照 关键字|关键字|... 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    System.out.println("请按照 关键字|关键字|... 的方式进行输入");
                     BufferedReader b3 = new BufferedReader(new InputStreamReader(System.in));
                     String words = buffer.readLine();
                     HBaseDemoMain.searchKeyword("test_records",words);
                     break;
                 case "4":
-                    System.out.println("请按照 url|url|... 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    System.out.println("请按照 url|url|... 的方式进行输入");
                     BufferedReader b4 = new BufferedReader(new InputStreamReader(System.in));
                     String urls = buffer.readLine();
                     HBaseDemoMain.searchUrl("test_records",urls);
                     break;
                 case "5":
-                    System.out.println("请按照 开始时间|结束时间+用户ID+关键字+url 的方式进行输入".getBytes(StandardCharsets.UTF_8));
+                    System.out.println("请按照 开始时间|结束时间+用户ID+关键字+url 的方式进行输入");
                     System.out.println("不需要的条件用#代替");
                     BufferedReader b5 = new BufferedReader(new InputStreamReader(System.in));
                     String word = buffer.readLine();

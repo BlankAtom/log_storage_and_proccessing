@@ -28,7 +28,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>edu.jmu.hbase.DataFilter</mainClass>
+                            <mainClass>edu.jmu.hbase.ReadMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -59,7 +59,7 @@
                     <includeProjectDependencies>true</includeProjectDependencies>
                     <includePluginDependencies>false</includePluginDependencies>
                     <classpathScope>compile</classpathScope>
-                    <mainClass>edu.jmu.hbase.DataFilter</mainClass>
+                    <mainClass>edu.jmu.hbase.ReadMain</mainClass>
                 </configuration>
             </plugin>
 

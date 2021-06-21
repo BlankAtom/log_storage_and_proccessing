@@ -36,33 +36,35 @@ public class DataFilter {
     public static void createTable(String[] args) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
 //        conf.set("fs.defaultFS", "hdfs://localhost:9000");
+        /* 文件流初始化 */
         FileSystem fsSource = FileSystem.get(URI.create("hdfs://localhost:9000" ), conf, "root");
         FSDataInputStream out = fsSource.open(new Path(args[0]));
         long time = new Date().getTime();
-
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(out));
         int line = 1;
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(out));
+
         String tempStr;
+        /* 本体类的实例化，主要是为了调用函数 */
         DataFilter readMain = new DataFilter();
+        /* put的集合 */
         List<Put> puts = new ArrayList<>();
         try {
             while( (tempStr = bufferedReader.readLine()) != null ){
                 List<String> s = SparkDB.splitRecord(tempStr);
 
-                // start_time user_id, search_word, url_reward, user_click_no, user_click_url
                 if(s.size() != 6 ) {
+                    /* 数据解析错误，输出错误行数和分割的size */
                     System.out.println("line " + line + " is error data. and length is " + s.size());
                 }
                 else {
-//                    System.out.println(Arrays.toString(s));
                     puts.addAll(readMain.instancePut(Integer.toString(line), s.get(0), s.get(1), s.get(2), s.get(3), s.get(4), s.get(5)));
                 }
                 line++;
 
                 if( line % 4000 == 0){
                     HBaseDemoMain.insertDatas("test_records", puts);
-                    puts = new ArrayList<>();
-                    System.out.println("4000 datas is inserting.");
+                    puts.clear();
+                    System.out.println("4000 datas is inserting. Now sum lines is:  " + line);
                 }
             }
             HBaseDemoMain.insertDatas("test_records", puts);
