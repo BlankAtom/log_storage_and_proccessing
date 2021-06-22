@@ -312,14 +312,39 @@ public class HBaseDemoMain {
                                                           CompareOperator compareOperator,
                                                           String compareValue) {
         SingleColumnValueFilter filter = new SingleColumnValueFilter(columnFamily.getBytes(), columnKey.getBytes(StandardCharsets.UTF_8),
+                compareOperator, compareValue.getBytes(StandardCharsets.UTF_8));
+        filter.setFilterIfMissing(true);
+        return filter;
+    }
+    public static SingleColumnValueFilter getSingleFilterBySubString(String columnFamily,
+                                                                     String columnKey,
+                                                                     CompareOperator compareOperator,
+                                                                     String compareValue){
+        SingleColumnValueFilter filter = new SingleColumnValueFilter(columnFamily.getBytes(), columnKey.getBytes(StandardCharsets.UTF_8),
                 compareOperator, new SubstringComparator(compareValue));
         filter.setFilterIfMissing(true);
         return filter;
+    }
+    public static SingleColumnValueFilter getSingleFilterBySubString(String columnKey,
+                                                                     CompareOperator compareOperator,
+                                                                     String compareValue)
+
+    {
+        return getSingleFilterBySubString("info", columnKey, compareOperator, compareValue);
     }
     public static SingleColumnValueFilter getSingleFilter(String columnKey,
                                                           CompareOperator compareOperator,
                                                           String compareValue){
         return getSingleFilter("info", columnKey, compareOperator, compareValue);
+    }
+    public static FilterList getFilterListOfStringArrayBySubString(String columnFamily, String columnKey,
+                                                                   CompareOperator operator,
+                                                                   FilterList.Operator op, String [] s){
+        FilterList filterList = new FilterList(op);
+        for (String s1 : s) {
+            filterList.addFilter(getSingleFilterBySubString(columnFamily, columnKey, operator, s1));
+        }
+        return filterList;
     }
     public static FilterList getFilterListOfStringArray(String columnKey, CompareOperator operator,
                                                         String[] s) {
@@ -341,13 +366,27 @@ public class HBaseDemoMain {
     }
     //时间段查询
     public static void searchTime(String tableName,String time) throws IOException {
+
         String[] times = time.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+        //大于开始时间
+        SingleColumnValueFilter singleColumnValueFilter1 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),
+                        CompareOperator.GREATER_OR_EQUAL,Bytes.toBytes(times[0]));
+        singleColumnValueFilter1.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter1);
+        //小于结束时间
+        SingleColumnValueFilter singleColumnValueFilter2 =
+                new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("start_time"),
+                        CompareOperator.LESS_OR_EQUAL,Bytes.toBytes(times[1]));
+        singleColumnValueFilter2.setFilterIfMissing(true);
+        filterList.addFilter(singleColumnValueFilter2);
 
         //创建scan
         Scan scan = new Scan();
         //设置过滤器
-        scan.setFilter(getFilterListOfStringArray("start_time",
-                CompareOperator.GREATER_OR_EQUAL, times));
+        scan.setFilter(filterList);
         //获取表
         Table table = connection.getTable(TableName.valueOf(tableName));
         //打印
@@ -360,11 +399,21 @@ public class HBaseDemoMain {
     public static void searchID(String tableName,String ids) throws IOException {
         //创建一个字符串数组 包含了多个ID
         String[] id = ids.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //通过字符串数组创建多个单值过滤器
+        for(int i=0;i<id.length;i++)
+        {
+            String keyword = id[i];
+            SingleColumnValueFilter singleColumnValueFilter =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_id"),CompareOperator.EQUAL,Bytes.toBytes(keyword));
+            singleColumnValueFilter.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter);
+        }
         //创建scan
         Scan scan = new Scan();
         //设置过滤器
-        scan.setFilter(getFilterListOfStringArray("user_id",
-                CompareOperator.GREATER_OR_EQUAL, id));
+        scan.setFilter(filterList);
         //获取表
         Table table = connection.getTable(TableName.valueOf(tableName));
         //打印
@@ -377,11 +426,22 @@ public class HBaseDemoMain {
     public static void searchKeyword(String tableName,String words) throws IOException {
         //创建一个字符串数组 包含了多个关键字
         String[] word = words.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //通过字符串数组创建多个单值过滤器
+        for(int i=0;i<word.length;i++)
+        {
+            String keyword = word[i];
+            SubstringComparator substringComparator = new SubstringComparator(keyword);
+            SingleColumnValueFilter singleColumnValueFilter =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("search_word"),CompareOperator.EQUAL,substringComparator);
+            singleColumnValueFilter.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter);
+        }
         //创建scan
         Scan scan = new Scan();
         //设置过滤器
-        scan.setFilter(getFilterListOfStringArray("search_word",
-                CompareOperator.GREATER_OR_EQUAL, word));
+        scan.setFilter(filterList);
         //获取表
         Table table = connection.getTable(TableName.valueOf(tableName));
         //打印
@@ -394,10 +454,22 @@ public class HBaseDemoMain {
     public static void searchUrl(String tableName,String urls) throws IOException {
         //创建一个字符串数组 包含了多个关键字
         String[] url = urls.split("\\|");
+        //创建过滤器链
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        //通过字符串数组创建多个单值过滤器
+        for(int i=0;i<url.length;i++)
+        {
+            String keyword = url[i];
+            SubstringComparator substringComparator = new SubstringComparator(keyword);
+            SingleColumnValueFilter singleColumnValueFilter =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"),Bytes.toBytes("user_click_url"),CompareOperator.EQUAL,substringComparator);
+            singleColumnValueFilter.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter);
+        }
+        //创建scan
         Scan scan = new Scan();
         //设置过滤器
-        scan.setFilter(getFilterListOfStringArray("user_click_url",
-                CompareOperator.GREATER_OR_EQUAL, url));
+        scan.setFilter(filterList);
         //获取表
         Table table = connection.getTable(TableName.valueOf(tableName));
         //打印
@@ -405,40 +477,57 @@ public class HBaseDemoMain {
         //释放资源
         table.close();
     }
-
-    //联合查询
     public static void searchALL(String tableName,String keywords) throws IOException{
         //先把输入的字符分割成四个部分
         String[] word = keywords.split("\\+");
         //创建一个过滤器链
         FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
         //分割第一部分时间的查询
-        if( !"#".equals(word[0]) ){
+        if(word[0].equals('#')){
+            ;
+        }else {
             String[] times = word[0].split("\\|");
-            for (String time : times) {
-                filterList.addFilter(getSingleFilter("start_time", CompareOperator.LESS_OR_EQUAL, time ));
-            }
+            SingleColumnValueFilter singleColumnValueFilter1 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("start_time"), CompareOperator.GREATER_OR_EQUAL, Bytes.toBytes(times[0]));
+            singleColumnValueFilter1.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter1);
+            //小于结束时间
+            SingleColumnValueFilter singleColumnValueFilter2 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("start_time"), CompareOperator.LESS_OR_EQUAL, Bytes.toBytes(times[1]));
+            singleColumnValueFilter2.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter2);
         }
         //第二部分用户ID
-        if(!"#".equals(word[1])){
-            String[] ids = word[1].split("\\|");
-            for (String id : ids) {
-                filterList.addFilter(getSingleFilter("user_id", CompareOperator.EQUAL, id ));
-            }
+        if(word[1].equals('#')){
+            ;
+        }else {
+            String id = word[1];
+            SingleColumnValueFilter singleColumnValueFilter3 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("user_id"), CompareOperator.EQUAL, Bytes.toBytes(id));
+            singleColumnValueFilter3.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter3);
         }
         //第三部分关键字查询
-        if(!"#".equals(word[2])){
-            String[] keys = word[2].split("\\|");
-            for (String key : keys) {
-                filterList.addFilter(getSingleFilter("search_word", CompareOperator.LESS_OR_EQUAL, key ));
-            }
+        if(word[2].equals('#')){
+            ;
+        }else {
+            String keyword = word[2];
+            SubstringComparator substringComparator = new SubstringComparator(keyword);
+            SingleColumnValueFilter singleColumnValueFilter4 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("search_word"), CompareOperator.EQUAL, substringComparator);
+            singleColumnValueFilter4.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter4);
         }
         //第四部分url查询
-        if(!"#".equals(word[3])){
-            String[] urls = word[3].split("\\|");
-            for (String url : urls) {
-                filterList.addFilter(getSingleFilter("user_click_url", CompareOperator.LESS_OR_EQUAL, url ));
-            }
+        if(word[3].equals('#')){
+            ;
+        }else {
+            String url = word[3];
+            SubstringComparator substringComparator1 = new SubstringComparator(url);
+            SingleColumnValueFilter singleColumnValueFilter5 =
+                    new SingleColumnValueFilter(Bytes.toBytes("info"), Bytes.toBytes("user_click_url"), CompareOperator.EQUAL, substringComparator1);
+            singleColumnValueFilter5.setFilterIfMissing(true);
+            filterList.addFilter(singleColumnValueFilter5);
         }
 
         Scan scan = new Scan();

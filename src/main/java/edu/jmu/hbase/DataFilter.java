@@ -63,13 +63,14 @@ public class DataFilter {
                 }
                 line++;
 
-                if( line % 4000 == 0){
+                if( line % 5000 == 0){
                     HBaseDemoMain.insertData("test_records", puts);
                     puts.clear();
-                    System.out.println("4000 data is inserting. Now sum lines is:  " + line);
+                    System.out.println("5000 data is inserting. Now sum lines is:  " + line);
                 }
             }
             HBaseDemoMain.insertData("test_records", puts);
+            HBaseDemoMain.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
