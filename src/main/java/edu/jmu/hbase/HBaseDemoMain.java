@@ -365,6 +365,7 @@ public class HBaseDemoMain {
         return filterList;
     }
     //时间段查询
+    //时间段查询
     public static void searchTime(String tableName,String time) throws IOException {
 
         String[] times = time.split("\\|");
@@ -484,7 +485,7 @@ public class HBaseDemoMain {
         FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
         //分割第一部分时间的查询
         if(word[0].equals('#')){
-            ;
+            System.out.println("#");
         }else {
             String[] times = word[0].split("\\|");
             SingleColumnValueFilter singleColumnValueFilter1 =
@@ -499,7 +500,7 @@ public class HBaseDemoMain {
         }
         //第二部分用户ID
         if(word[1].equals('#')){
-            ;
+            System.out.println("#");
         }else {
             String id = word[1];
             SingleColumnValueFilter singleColumnValueFilter3 =
@@ -509,7 +510,7 @@ public class HBaseDemoMain {
         }
         //第三部分关键字查询
         if(word[2].equals('#')){
-            ;
+            System.out.println("#");
         }else {
             String keyword = word[2];
             SubstringComparator substringComparator = new SubstringComparator(keyword);
@@ -520,7 +521,7 @@ public class HBaseDemoMain {
         }
         //第四部分url查询
         if(word[3].equals('#')){
-            ;
+            System.out.println("#");
         }else {
             String url = word[3];
             SubstringComparator substringComparator1 = new SubstringComparator(url);
@@ -540,4 +541,5 @@ public class HBaseDemoMain {
         //释放资源
         table.close();
     }
+
 }

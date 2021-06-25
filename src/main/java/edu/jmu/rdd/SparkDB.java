@@ -155,6 +155,10 @@ public class SparkDB {
             timeStreamCompute(inputFile, outputFile+"/flow", args[1], args[2]);
         }
         if( "search".equals(args[0]) ){
+            if(args.length < 2){
+                System.out.println("Please enter search word");
+                System.exit(0);
+            }
             StringBuilder str = new StringBuilder();
             for (int i = 1; i < args.length; i++) {
                 str.append(" ").append(args[i]);
