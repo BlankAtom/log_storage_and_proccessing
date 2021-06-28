@@ -128,7 +128,7 @@ public class SparkDB {
     }
 
     public static void main(String[] args) {
-        String inputFile = "hdfs://localhost:9000/input/SogouQ.txt" ;//args[0];
+        String inputFile = "hdfs://localhost:9000/input/Sogou.txt" ;//args[0];
         String outputFile = "hdfs://localhost:9000/output"; //args[1];
 
         if(args.length==0 || "--help".equals(args[0])){
