@@ -128,7 +128,7 @@ public class SparkDB {
     }
 
     public static void main(String[] args) {
-        String inputFile = "hdfs://localhost:9000/input/SogouQ.reduced" ;//args[0];
+        String inputFile = "hdfs://localhost:9000/input/SogouQ.txt" ;//args[0];
         String outputFile = "hdfs://localhost:9000/output"; //args[1];
 
         if(args.length==0 || "--help".equals(args[0])){
@@ -163,7 +163,7 @@ public class SparkDB {
             for (int i = 1; i < args.length; i++) {
                 str.append(" ").append(args[i]);
             }
-            System.out.println(str);
+            System.out.println("enter: " + str);
             rddStartSearch(inputFile, outputFile+"/search", new String(str) );
         }
 
