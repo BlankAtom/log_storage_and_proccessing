@@ -178,8 +178,8 @@ public class SparkDB {
             List<String> list = SparkDB.splitRecord(s);
             return new Tuple2<>(list.get(3), 1);
         });
-        JavaPairRDD<String, Integer> rdd = pairRDD.reduceByKey((Function2<Integer, Integer, Integer>) (v1, v2) -> v1 + v2);
-        rdd.foreach(System.out::println);
+        JavaPairRDD<String, Integer> rdd = pairRDD.reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
+//        rdd.foreach(System.out::println);
         rdd.saveAsTextFile(output);
     }
 
