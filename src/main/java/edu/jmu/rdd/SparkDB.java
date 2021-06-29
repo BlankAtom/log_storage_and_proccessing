@@ -131,6 +131,7 @@ public class SparkDB {
         String inputFile = "hdfs://localhost:9000/input/Sogou.txt" ;//args[0];
         String outputFile = "hdfs://localhost:9000/output"; //args[1];
 
+        System.out.println("parse: " + Arrays.toString(args));
         if(args.length==0 || "--help".equals(args[0])){
             System.out.println("\t\"search\":  条件查询，");
             System.out.println("\t\teg. 00:00:00 | 00:01:00 + 2982199073774412 + 360 + it.com");
