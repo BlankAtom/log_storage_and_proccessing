@@ -165,7 +165,7 @@ public class SparkDB {
                 str.append(" ").append(args[i]);
             }
             System.out.println("enter: " + str);
-            rddStartSearch(inputFile, outputFile+"/search", new String(str) );
+//            rddStartSearch(inputFile, outputFile+"/search", new String(str) );
         }
 
     }
