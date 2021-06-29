@@ -165,7 +165,7 @@ public class SparkDB {
                 str.append(" ").append(args[i]);
             }
             System.out.println("enter: " + str);
-//            rddStartSearch(inputFile, outputFile+"/search", new String(str) );
+            rddStartSearch(inputFile, outputFile+"/search", new String(str) );
         }
 
     }
@@ -178,7 +178,7 @@ public class SparkDB {
             List<String> list = SparkDB.splitRecord(s);
             return new Tuple2<>(list.get(3), 1);
         });
-        JavaPairRDD<String, Integer> rdd = pairRDD.reduceByKey((Function2<Integer, Integer, Integer>) Integer::sum);
+        JavaPairRDD<String, Integer> rdd = pairRDD.reduceByKey((Function2<Integer, Integer, Integer>) (v1, v2) -> v1 + v2);
         rdd.foreach(System.out::println);
         rdd.saveAsTextFile(output);
     }
